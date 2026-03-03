@@ -1,0 +1,15 @@
+name: llmsqler
+channels:
+  - pytorch
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.10
+  - transformers
+  - datasets
+  - accelerate
+  - pip
+  - pip:    
+    - peft
+    - bitsandbytes
+    - trl
