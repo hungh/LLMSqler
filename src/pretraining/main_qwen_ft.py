@@ -38,6 +38,7 @@ sft_config = SFTConfig(
     
     # Training Loop
     max_steps=300, # 500 
+    save_strategy="steps",
     save_steps=100,
     logging_steps=10,
     eval_strategy="steps",
