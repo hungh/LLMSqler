@@ -13,3 +13,5 @@ dependencies:
     - peft
     - bitsandbytes
     - trl
+    - protobuf
+    - tiktoken

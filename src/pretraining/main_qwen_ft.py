@@ -83,3 +83,5 @@ trainer.train()
 
 # Final Save
 trainer.model.save_pretrained(f"{DATA_PATH}/llmsqler-final")
+
+__all__ = ["tokenizer", "eval_dataset"]
