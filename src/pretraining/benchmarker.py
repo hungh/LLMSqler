@@ -39,7 +39,32 @@ Question: {question}
 SQL Output:<|im_end|>
 <|im_start|>assistant
 """
-   
+
+### Example prompt:
+'''
+<|im_start|>system
+You are a SQL expert. Use the following Postgres DDL to answer the user's question accurately.
+<|im_end|>
+<|im_start|>user
+Schema:
+CREATE TABLE singer (
+    singer_id INT PRIMARY KEY,
+    name TEXT,
+    citizenship TEXT
+);
+
+CREATE TABLE concert (
+    concert_id INT PRIMARY KEY,
+    singer_id INT REFERENCES singer(singer_id),
+    year INT
+);
+
+Question: What are the names of the singers who are not French citizens?
+SQL Output:<|im_end|>
+<|im_start|>assistant
+SELECT name FROM singer WHERE citizenship != 'France'
+'''
+# NOTE: no SQL output in inference time 
 ###
 
 # 1. Load the Model & Tokenizer
