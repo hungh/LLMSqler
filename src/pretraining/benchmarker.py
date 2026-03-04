@@ -8,7 +8,7 @@ from datasets import load_dataset
 ### with schema in the prompts
 def get_schema_context(db_id):
     """
-    In a real app, we pull this from a metadata dictionary or SQLITE_MASTER.
+    In a real app, we pull this from a metadata dictionary or DB schema.
     For this benchmark, we can look at the 'db_id' and provide the tables.
     """
     # Example schema format that Qwen2.5 excels at but this is not the real schema (tech debt)
@@ -68,7 +68,6 @@ SELECT name FROM singer WHERE citizenship != 'France'
 ###
 
 # 1. Load the Model & Tokenizer
-# Use the same base model that was used for training (e.g., Qwen/Qwen2.5-3B-Instruct)
 BASE_MODEL = "Qwen/Qwen2.5-1.5B-Instruct" # "Qwen/Qwen2.5-3B-Instruct" 
 ADAPTER_PATH = ".model/llmsqler-final"
 TOKENIZER_PATH = ".model/llmsqler_v1/checkpoint-300"
@@ -85,14 +84,8 @@ model = AutoModelForCausalLM.from_pretrained(
 model = PeftModel.from_pretrained(model, ADAPTER_PATH, use_fast=False)
 model.eval()
 
-# 2. Load Get Test Data
 # Load the raw dataset
-raw_dataset = load_dataset("xlangai/spider", split="validation")
-
-# Apply the tokenizer
-# do not format into 'prompt' and 'completion' columns
-eval_dataset = raw_dataset #.map(format_dataset, remove_columns=raw_dataset.column_names)
-
+eval_dataset = load_dataset("xlangai/spider", split="validation")
 
 print("\n--- Starting SQL Benchmark ---")
 
@@ -118,7 +111,7 @@ def run_test(example):
 test_indices = random.sample(range(len(eval_dataset)), 5)
 
 for i in test_indices:
-    item = eval_dataset[i] # Use raw split to get 'db_id' and 'question' easily       
+    item = eval_dataset[i] 
     gold_sql = item['query']
     pred_sql = run_test(item) 
     

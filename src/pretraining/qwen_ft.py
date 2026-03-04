@@ -35,8 +35,7 @@ lora_config = LoraConfig(
     target_modules=["q_proj", "k_proj", "v_proj", "o_proj", "gate_proj", "up_proj", "down_proj"],
     lora_dropout=0.05,
     bias="none",
-    task_type="CAUSAL_LM",
-    # modules_to_save=["lm_head", "embed_tokens"] # do not save the original weights
+    task_type="CAUSAL_LM",  
 )
 
 
@@ -48,37 +47,5 @@ print("Model loaded successfully! and it uses ", model.device)
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(f"Using device: {device}")
 model = model.to(device)
-
-'''
-# test the raw model
-prompt = """### Postgres SQL Schema:
-Table: Users (id, name, email, join_date)
-Table: Orders (id, user_id, amount, status)
-
-### Question:
-Find the names of users who spent more than $500 in total.
-
-### SQL Output:"""
-
-input_ids = tokenizer(prompt, padding=True, truncation=True, return_tensors="pt").to(device)
-print(f"input_ids: {input_ids}")
-# outputs = model.generate(**input_ids, max_length=100) 
-with torch.no_grad():
-    outputs = model(**input_ids, output_hidden_states=True) # the outputs will have last_hidden_state
-    hidden_states = outputs["hidden_states"][-1]  # Get the last layer's hidden states
-    # DEBUG
-    print("Raw model output:")
-    print(hidden_states.shape)
-
-# print(tokenizer.decode(outputs[0], skip_special_tokens=True))
-
-
-# do not forget to save the fine-tuned model
-# model.save_pretrained("qwen2.5-1.5b-lora")
-# tokenizer.save_pretrained("qwen2.5-1.5b-lora")
-
-# load spider original dataset from HF
-spider = load_dataset("xlangai/spider", split="train")
-'''
 
 __all__ = ['tokenizer', 'model', 'lora_config']

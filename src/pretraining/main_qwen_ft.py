@@ -1,8 +1,6 @@
 from datasets import load_dataset
 
 from trl import SFTTrainer, SFTConfig
-from transformers import DataCollatorForLanguageModeling
-
 from qwen_ft import tokenizer, model
 from spider_ds import format_dataset
 
@@ -27,12 +25,12 @@ sft_config = SFTConfig(
     max_length=2048,
     dataset_text_field=None,        # Ignored when using prompt/completion
     packing=False,                  # Mandatory for completion_only_loss
-    completion_only_loss=True,      # THE KEY: Masks 'prompt' in labels automatically
+    completion_only_loss=True,      # Masks 'prompt' in labels automatically -> the loss is only computed on 'completion'
     
     # Hardware Optimizations
     per_device_train_batch_size=2,
     gradient_accumulation_steps=8,
-    optim="paged_adamw_32bit",      # Use your 32GB CPU RAM
+    optim="paged_adamw_32bit",      # Use CPU RAM, estimate 24GB during training
     bf16=True,
     gradient_checkpointing=True,
     
@@ -48,7 +46,7 @@ sft_config = SFTConfig(
 
 if tokenizer.pad_token is None:
     tokenizer.pad_token = tokenizer.eos_token
-    # no confusion by padding on the right side
+    # tell tokenizer to pad on the right side
     tokenizer.padding_side = "right"
 
 # Synchronize the model's config with the tokenizer
@@ -66,17 +64,12 @@ if hasattr(model, 'generation_config'):
     model.generation_config.eos_token_id = tokenizer.eos_token_id
 
 # Initialize the Trainer as supervised fine tuning
-# Trainer Config
 trainer = SFTTrainer(
     model=model,
     train_dataset=train_dataset,
     eval_dataset=eval_dataset,
-    args=sft_config,
-    # Standard collator is fine because completion_only_loss=True 
-    # handles the label masking inside the SFTTrainer.
-    # data_collator=DataCollatorForLanguageModeling(tokenizer, mlm=False),
+    args=sft_config
 )
-
 
 # Start Fine-tuning
 trainer.train()
