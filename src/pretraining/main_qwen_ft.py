@@ -51,6 +51,20 @@ if tokenizer.pad_token is None:
     # no confusion by padding on the right side
     tokenizer.padding_side = "right"
 
+# Synchronize the model's config with the tokenizer
+if tokenizer.pad_token is not None:
+    model.config.pad_token_id = tokenizer.pad_token_id
+if tokenizer.bos_token is not None:
+    model.config.bos_token_id = tokenizer.bos_token_id
+if tokenizer.eos_token is not None:
+    model.config.eos_token_id = tokenizer.eos_token_id
+
+# Also set generation config
+if hasattr(model, 'generation_config'):
+    model.generation_config.pad_token_id = tokenizer.pad_token_id
+    model.generation_config.bos_token_id = tokenizer.bos_token_id
+    model.generation_config.eos_token_id = tokenizer.eos_token_id
+
 # Initialize the Trainer as supervised fine tuning
 # Trainer Config
 trainer = SFTTrainer(
@@ -62,6 +76,7 @@ trainer = SFTTrainer(
     # handles the label masking inside the SFTTrainer.
     # data_collator=DataCollatorForLanguageModeling(tokenizer, mlm=False),
 )
+
 
 # Start Fine-tuning
 trainer.train()
