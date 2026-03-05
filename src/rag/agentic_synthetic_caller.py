@@ -1,9 +1,9 @@
 
 import logging
-from typing import List, Dict, Tuple, Set
+from typing import List, Dict, Tuple
 import psycopg2
 from psycopg2.extras import execute_values
-from .global_config import DB_NAME, DB_USER, DB_PORT
+from .global_config import DB_NAME, DB_USER, DB_PORT, LOAD_SCHEMA_QUERY
 from .column_processor import ColumnProcessor
 from .qwen_data_generator import LocalQwenGenerator
 import time
@@ -86,15 +86,11 @@ class SyntheticDataGenerator:
         cur = conn.cursor()
 
         logger.debug(f"Fetching schema for {table_name}...")
-        # Get schema
-        cur.execute("""
-            SELECT column_name, data_type
-            FROM information_schema.columns
-            WHERE table_schema = 'public' AND table_name = %s
-            ORDER BY ordinal_position;
-        """, (table_name,))
+        # Get schema with key type and reference table information
+        cur.execute(LOAD_SCHEMA_QUERY, (table_name, table_name, table_name))
+
+        columns = [{'name': row[0], 'type': row[1], 'key_type': row[2], 'reference_table': row[3] if row[3] else None} for row in cur.fetchall()]
         
-        columns = [{'name': row[0], 'type': row[1]} for row in cur.fetchall()]
         col_names = [col['name'] for col in columns]
         
         # Batch processing
@@ -125,6 +121,7 @@ class SyntheticDataGenerator:
                         )
                         logger.debug(f"Inserted {len(batch_rows)} rows into {table_name}")
                         conn.commit()
+                        # cache the inserted rows to Redis server (table_name, list_ids)
                         logger.debug(f"Committed {len(batch_rows)} rows into {table_name}")
                     logger.debug(f"Inserted {len(batch_rows)} rows into {table_name}")
                 except Exception as e:
