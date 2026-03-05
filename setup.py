@@ -9,5 +9,10 @@ setup(
         "transformers",
         "peft",
         "openai",
+        "redis",
+        "bitsandbytes",
+        "peft",
+        "datasets",
+        "accelerate"
     ],
 )

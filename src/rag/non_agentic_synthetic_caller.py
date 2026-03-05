@@ -1,10 +1,10 @@
 from faker import Faker
 from psycopg2.extras import execute_values
-from global_config import DB_NAME, DB_USER, DB_PORT
+from .global_config import DB_NAME, DB_USER, DB_PORT
 import argparse
 import psycopg2
 
-from introspect_schema import get_tables_from_schema
+from .introspect_schema import get_tables_from_schema
 
 
 
@@ -87,6 +87,7 @@ if __name__ == "__main__":
     conn = psycopg2.connect("host=" + args.server + " port=" + str(DB_PORT) + " dbname=" + DB_NAME + " user=" + DB_USER + " password=" + args.password)
 
     tables = get_tables_from_schema(conn)
+    print("Tables to populate:", tables)
     for t in tables:
         populate_table(conn, t, n_rows=5000)
     conn.close()

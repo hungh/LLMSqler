@@ -3,6 +3,15 @@ import re
 import json
 
 def extract_json(text: str):
+    """
+    Extract JSON from a string that may contain code fences or other text.
+    
+    Args:
+        text: String that may contain JSON
+        
+    Returns:
+        Parsed JSON object or list
+    """
     # Remove code fences anywhere
     text = re.sub(r"```json|```", "", text, flags=re.I).strip()
 

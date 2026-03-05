@@ -65,3 +65,18 @@ src/
 {'train_runtime': '1063', 'train_samples_per_second': '4.517', 'train_steps_per_second': '0.282', 'train_loss': '0.6024', 'epoch': '0.7619'}
 100%|████████████████████████████████████████████████████████████████████████████████| 300/300 [17:42<00:00,  3.54s/it]
 ```
+
+## Architecture Diagrams
+
+### Runtime Flow Architecture
+
+<img src="images/user_prompt_llm_arch.png" alt="Runtime Flow Architecture" style="width:60%;height:50%;">
+
+### Data Generation Architecture
+
+<img src="images/data_gen_llm_arch.png" alt="Data Generation Architecture" style="width:60%;height:50%;">
+
+
+#### System component diagram
+
+<img src="images/system_comps.png" alt="System component diagram" style="width:90%;height:90%;">

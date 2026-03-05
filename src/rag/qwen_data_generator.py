@@ -19,17 +19,23 @@ class LocalQwenGenerator:
         self.tokenizer = tokenizer
         self.model = model
         
-    def generate_structured_data(self, table_name: str, columns: List[Dict[str, str]]) -> Dict[str, str]:
+    def generate_structured_data(self, table_name: str, columns: List[Dict[str, str]], is_dry_run: bool = False) -> Dict[str, str]:
         """
         Generate structured data using local Qwen model.
         
         Args:
             table_name: Name of the table
             columns: List of column dictionaries with column 'name' and its 'type' keys
+            is_dry_run: If True, return dummy data instead of generating from model
             
         Returns:
             Dictionary with column names as keys and generated values as values
         """
+        if is_dry_run:
+            logger.warning("[WARN] Dry run mode enabled, returning dummy data")
+            data_by_column_dict = [ {col['name']: "value_here"} for col in columns ]
+            return data_by_column_dict
+
         # Create prompt for structured output
         column_info = "\n".join([f"- {col['name']} ({col['type']})" for col in columns])
         
@@ -57,8 +63,6 @@ class LocalQwenGenerator:
 
         print(prompt)       
         try:
-           
-           
             inputs = self.tokenizer(prompt, return_tensors="pt", truncation=True, max_length=512).to(self.model.device)
             with torch.no_grad():
                 outputs = self.model.generate(
@@ -77,10 +81,11 @@ class LocalQwenGenerator:
                 skip_special_tokens=True
             ).strip()
             
-            print(f"generated_text: {generated_text}")
-           
             # Clean and parse JSON
             result = extract_json(generated_text)
+
+            logger.debug(f"Generated data for table {table_name} with columns {columns} with results: {result}")
+
             if result:
                 return result
             else:

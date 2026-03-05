@@ -9,7 +9,11 @@ logger = logging.getLogger(__name__)
 fake = Faker()
 class ColumnProcessor:
     """Centralized column processing with security rules."""
-       
+    
+    _SQL_KEYWORDS = SQL_KEYWORDS
+    _DANGEROUS_CHARS = DANGEROUS_CHARS
+    _MAX_LENGTHS = MAX_LENGTHS
+
     @classmethod
     def get_column_category(cls, column_name: str, data_type: str) -> str:
         """Categorize column for appropriate processing."""
@@ -39,21 +43,22 @@ class ColumnProcessor:
         str_value = str(value).strip()
         
         # Remove dangerous characters
-        for char in cls.DANGEROUS_CHARS:
+        for char in cls._DANGEROUS_CHARS:
             str_value = str_value.replace(char, '')
         
         # Check for SQL keywords
         words = str_value.upper().split()
         for word in words:
-            if word in cls.SQL_KEYWORDS:
+            if word in cls._SQL_KEYWORDS:
                 logger.warning(f"Detected potential SQL injection: {word}")
                 return ""
         
         # Apply length limits
-        max_len = cls.MAX_LENGTHS.get(column_category, cls.MAX_LENGTHS['default'])
+        max_len = cls._MAX_LENGTHS.get(column_category, cls._MAX_LENGTHS['default'])
         if len(str_value) > max_len:
             str_value = str_value[:max_len]
         
+        logger.debug(f"Sanitized value for {column_category}: {str_value}")
         return str_value
     
     @classmethod
