@@ -15,3 +15,7 @@ dependencies:
     - trl
     - protobuf
     - tiktoken
+    - psycopg2
+    - faker
+    - openai
+    

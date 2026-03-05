@@ -1,9 +1,7 @@
 import torch
-from peft import PeftModel
-from transformers import AutoModelForCausalLM, AutoTokenizer
 import random
 from datasets import load_dataset
-
+from .qwen import model_and_tokenizer
 
 ### with schema in the prompts
 def get_schema_context(db_id):
@@ -67,22 +65,7 @@ SELECT name FROM singer WHERE citizenship != 'France'
 # NOTE: no SQL output in inference time 
 ###
 
-# 1. Load the Model & Tokenizer
-BASE_MODEL = "Qwen/Qwen2.5-1.5B-Instruct" # "Qwen/Qwen2.5-3B-Instruct" 
-ADAPTER_PATH = ".model/llmsqler-final"
-TOKENIZER_PATH = ".model/llmsqler_v1/checkpoint-300"
-
-# local tokenizer
-tokenizer = AutoTokenizer.from_pretrained(TOKENIZER_PATH)
-
-model = AutoModelForCausalLM.from_pretrained(
-    BASE_MODEL, 
-    device_map="auto", 
-    torch_dtype=torch.bfloat16
-)
-# Load local LoRA weights on top
-model = PeftModel.from_pretrained(model, ADAPTER_PATH, use_fast=False)
-model.eval()
+model, tokenizer = model_and_tokenizer()
 
 # Load the raw dataset
 eval_dataset = load_dataset("xlangai/spider", split="validation")
@@ -92,6 +75,7 @@ print("\n--- Starting SQL Benchmark ---")
 def run_test(example):
     prompt = get_prompt_with_schema(example)
     
+    print(prompt)
     inputs = tokenizer(prompt, return_tensors="pt").to(model.device)
     
     with torch.no_grad():
